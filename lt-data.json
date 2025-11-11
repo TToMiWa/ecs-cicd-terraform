@@ -1,0 +1,13 @@
+{
+  "ImageId": "ami-039a3ca32e09e90fd",
+  "InstanceType": "t3.micro",
+  "IamInstanceProfile": { "Name": "ecsInstanceProfile" },
+  "UserData": "IyEvYmluL2Jhc2gKZWNobyBFQ1NfQ0xVU1RFUj1oZWxsby1jbHVzdGVyID4+IC9ldGMvZWNzL2Vjcy5jb25maWcKc3lzdGVtY3RsIGVuYWJsZSAtLW5vdyBlY3MK",
+  "NetworkInterfaces": [
+    {
+      "AssociatePublicIpAddress": true,
+      "DeviceIndex": 0,
+      "Groups": ["sg-0affb5794c4bcb4bc"]
+    }
+  ]
+}

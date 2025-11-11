@@ -1,0 +1,5 @@
+git init
+git remote add origin https://github.com/TToMiWa/ecs-cicd-terraform.git
+git add .
+git commit -m "Initial commit - ECS Terraform project"
+git push -u origin main
