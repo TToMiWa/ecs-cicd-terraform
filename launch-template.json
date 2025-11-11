@@ -1,0 +1,11 @@
+{
+  "ImageId": "ami-039a3ca32e09e90fd",
+  "InstanceType": "t3.micro",
+  "IamInstanceProfile": {
+    "Name": "ecsInstanceProfile"
+  },
+  "SecurityGroupIds": [
+    "sg-0e229fc42be7cdabe"
+  ],
+  "UserData": "IyEvYmluL2Jhc2gKc3VkbyB5dW0gdXBkYXRlIC15CnN1ZG8geXVtIGluc3RhbGwgLXkgbmdpbngKc3VkbyBzeXN0ZW1jdGwgZW5hYmxlIG5naW54CnN1ZG8gc3lzdGVtY3RsIHN0YXJ0IG5naW54CmVjaG8gJzxwPkhlbGxvIGZyb20gRUNTIEluc3RhbmNlPC9wPicgPiAvaG9tZS9lY2IvbmctaW5kZXguaHRtbA=="
+}
