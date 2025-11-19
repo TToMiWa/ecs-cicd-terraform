@@ -1,0 +1,54 @@
+name: CD — Deploy Terraform (apply image)
+
+on:
+  push:
+    branches: ["master"]
+  workflow_run:
+    workflows: ["CI — Build & Push to ECR"]
+    types:
+      - completed
+
+env:
+  AWS_REGION: eu-north-1
+  ECR_REPOSITORY: hello-terraform
+
+jobs:
+  deploy:
+    name: Terraform Apply (update ECS)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get latest image digest (resolve latest tag)
+        id: image
+        run: |
+          IMAGE_URI="${{ secrets.ECR_REGISTRY }}/${ECR_REPOSITORY}:latest"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./hello-terraform
+
+      - name: Terraform Apply
+        env:
+          TF_VAR_image_uri: ${{ secrets.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+        run: terraform apply -auto-approve
+        working-directory: ./hello-terraform
