@@ -69,23 +69,9 @@ jobs:
           # Construct the same URI used in the build step
           TF_VAR_image_uri: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
         run: terraform apply -auto-approve
-       
-    # JOB 3: Force ECS Redeployment
-  ecs-redeploy:
-    name: Force ECS Service Deployment
-    runs-on: ubuntu-latest
-    needs: deploy   # must wait for Terraform
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Force New Deployment in ECS
+      - name: Force ECS New Deployment
         run: |
-          aws ecs update-service \
-            --cluster hello-cluster \
-            --service hello-service \
-            --force-new-deployment
+          aws ecs update-service --cluster hello-app-cluster --service hello-app-service --force-new-deployment
+       
+   
