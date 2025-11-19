@@ -72,6 +72,6 @@ jobs:
 
       - name: Force ECS New Deployment
         run: |
-          aws ecs update-service --cluster hello-app-cluster --service hello-app-service --force-new-deployment
+          aws ecs update-service --cluster hello-ecs-cluster --service hello-app-service --force-new-deployment
        
    
