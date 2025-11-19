@@ -13,3 +13,4 @@ override.tf.json
 .terraformrc
 terraform.rc
 notepad2app.js
+userdata.txt
