@@ -140,7 +140,8 @@ resource "aws_ecs_task_definition" "app_task" {
   container_definitions = jsonencode([
     {
       name      = "hello-app"
-      image     = "404119728613.dkr.ecr.eu-north-1.amazonaws.com/hello-terraform:latest"
+      image = var.image_uri != "" ? var.image_uri : "404119728613.dkr.ecr.eu-north-1.amazonaws.com/hello-terraform:latest"
+
       essential = true
       portMappings = [
         {
