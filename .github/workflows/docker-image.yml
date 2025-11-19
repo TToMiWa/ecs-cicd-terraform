@@ -1,0 +1,42 @@
+name: CI — Build & Push to ECR
+
+on:
+  push:
+    branches: ["master"]
+ 
+env:
+  AWS_REGION: eu-north-1
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}       # e.g. 404119728613.dkr.ecr.eu-north-1.amazonaws.com
+  ECR_REPOSITORY: hello-terraform                 # change if your repo name differs
+
+jobs:
+  build-and-push:
+    name: Build, Tag and Push Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./notepad-app
+          file: ./notepad-app/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Output image URI (for debugging)
+        run: echo "IMAGE_URI=${ECR_REGISTRY}/${ECR_REPOSITORY}:latest"
