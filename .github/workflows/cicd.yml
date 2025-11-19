@@ -70,3 +70,22 @@ jobs:
           TF_VAR_image_uri: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
         run: terraform apply -auto-approve
        
+    # JOB 3: Force ECS Redeployment
+  ecs-redeploy:
+    name: Force ECS Service Deployment
+    runs-on: ubuntu-latest
+    needs: deploy   # must wait for Terraform
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Force New Deployment in ECS
+        run: |
+          aws ecs update-service \
+            --cluster hello-cluster \
+            --service hello-service \
+            --force-new-deployment
