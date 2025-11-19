@@ -1,0 +1,72 @@
+name: Main Pipeline — Build & Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  AWS_REGION: eu-north-1
+  # Using the secret directly here ensures it's available to both jobs
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY: hello-terraform
+
+jobs:
+  # JOB 1: Build and Push
+  build-and-push:
+    name: Build & Push to ECR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./notepad-app
+          file: ./notepad-app/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+  # JOB 2: Deploy (Waits for Job 1)
+  deploy:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: build-and-push  # <--- THIS creates the horizontal dependency
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./hello-terraform
+
+      - name: Terraform Apply
+        env:
+          # Construct the same URI used in the build step
+          TF_VAR_image_uri: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+        run: terraform apply -auto-approve
+        working-directory: ./hello-terraform
