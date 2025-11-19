@@ -62,11 +62,11 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./hello-terraform
+       
 
       - name: Terraform Apply
         env:
           # Construct the same URI used in the build step
           TF_VAR_image_uri: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
         run: terraform apply -auto-approve
-        working-directory: ./hello-terraform
+       
